@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -22,35 +23,36 @@ struct Node{ //Nodos del grafo
 };
 
 
-
-
 class Grafo {
 public:
     // Constructor
-    Grafo(int numberVectors): nodeList(numberVectors) {} //instancia el grafo con la cantidad exacta de nodos
+    Grafo(int numberVectors): nodeList(numberVectors) {
+        for(int i=0 ; i<nodeList.size(); i++){
+            nodeList[i].number = i+1;
+        }
+    } //instancia el grafo con la cantidad exacta de nodos
 
     // Función para agregar una arista al grafo con la distancia de la carretera
     void agregarArista(int startNode, int endNode, int distancia) { //Llena el grafo con los caminos
         Connection connection;
         connection.destino = endNode+1;
         connection.distancia = distancia;
-        
-        nodeList[startNode].number = startNode+1;
+
         nodeList[startNode].connectionList.push_back(connection);
         connection.destino = startNode+1;
         nodeList[endNode].connectionList.push_back(connection);
     }
 
-    void dijstrack(int currentWayIndex, int endNode){
+    Way dijstrack(int currentWayIndex, int endNode){
         int waysFound = 0;
         Way currentWay = wayList[currentWayIndex]; //obtiene el camino actual
-        int lastNumberNode = currentWay.way[currentWay.way.size()-1]; //Obtener el numero del ultimo nodo del camino
+        int lastNumberNode = currentWay.way[currentWay.way.size()-1] -1; //Obtener el numero del ultimo nodo del camino
         Node lastNode = nodeList[lastNumberNode]; //Obtener el ultimo nodo del camino.
+        
         cout<<"cantidad de conexiones con " << lastNode.number <<": " << lastNode.connectionList.size()<<endl;
         
-        if(lastNumberNode == endNode){
-            cout<<"Se acabo, se consiguio que " << lastNumberNode << " y " << endNode<< "son los mismos"<< endl<< endl;
-            return;
+        if(find(wayList[currentWayIndex].way.begin(), wayList[currentWayIndex].way.end(), endNode) != wayList[currentWayIndex].way.end()){
+            return wayList[currentWayIndex];
         }
         for(int i=0; i < lastNode.connectionList.size(); i++){
             cout<<"-----------------------------------------------------------"<<endl;
@@ -62,7 +64,7 @@ public:
             wayTemp.distance += lastNode.connectionList[i].distancia;
             
             if(isWayValid(wayTemp)){
-                nodeList[destino-1].lowCostWay = nodeList[destino-1].lowCostWay.distance > wayTemp.distance ? wayTemp : nodeList[destino-1].lowCostWay; //ajusta el menor camino al nodo
+                //nodeList[destino-1].lowCostWay = nodeList[destino-1].lowCostWay.distance > wayTemp.distance ? wayTemp : nodeList[destino-1].lowCostWay; //ajusta el menor camino al nodo
                 if(waysFound != 0 ){
                     wayList.push_back(wayTemp);
                 }
@@ -77,10 +79,14 @@ public:
 
     void getLowerWayPossible(int start, int end){
         cout<<"Comenzando dijstrack" <<endl;
-        Way initialWay;
+        Way initialWay, result;
         initialWay.way.push_back(start);
         wayList.push_back(initialWay);
-        dijstrack(0, end);
+        result = dijstrack(0, end);
+
+        cout<<"Se consiguio el camino mas corto que es "<<endl;
+        printWay(result);
+        cout<<endl<<"Con " << result.distance <<"km en total"<<endl;
     }
 
 
@@ -94,10 +100,12 @@ public:
     }
     bool isWayValid(Way possibleWay){ // verifica que los caminos no se repitan los nodos
         int position = possibleWay.way[0];
-        for(int i=1; i < possibleWay.way.size(); i++){
-            if(position == possibleWay.way[i]) return false;
-        }
-        cout<<endl;
+        for(int i=0; i < possibleWay.way.size(); i++)
+            for(int k=0; k < possibleWay.way.size(); k++)
+                if(k == i) continue;
+                else if(possibleWay.way[i] == possibleWay.way[k]) return false;
+            
+
         return true;
     }
     // Función para imprimir el grafo
