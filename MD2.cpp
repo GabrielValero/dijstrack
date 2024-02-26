@@ -64,10 +64,11 @@ public:
             wayTemp.distance += lastNode.connectionList[i].distancia;
             
             if(isWayValid(wayTemp)){
-                //nodeList[destino-1].lowCostWay = nodeList[destino-1].lowCostWay.distance > wayTemp.distance ? wayTemp : nodeList[destino-1].lowCostWay; //ajusta el menor camino al nodo
-                if(waysFound != 0 ){
-                    wayList.push_back(wayTemp);
-                }
+                if(nodeList[destino-1].lowCostWay.distance == 0 || nodeList[destino-1].lowCostWay.distance > wayTemp.distance)
+                    nodeList[destino-1].lowCostWay = wayTemp; //ajusta el menor camino al nodo
+                
+                
+                if(waysFound != 0 )wayList.push_back(wayTemp);
                 else wayList[currentWayIndex] = wayTemp;
                 waysFound++;
             }
@@ -87,6 +88,7 @@ public:
         cout<<"Se consiguio el camino mas corto que es "<<endl;
         printWay(result);
         cout<<endl<<"Con " << result.distance <<"km en total"<<endl;
+        printLowestWayToNode();
     }
 
 
@@ -125,7 +127,16 @@ public:
         }
         cout<<endl;
     }
-
+    void printLowestWayToNode(){
+        for(int i=0; i< nodeList.size(); i++){
+            cout<<"Imprimiendo el camino mas corto hacia "<<nodeList[i].number<<endl;
+            for(int k=0; k < nodeList[i].lowCostWay.way.size(); k++){
+                cout<< nodeList[i].lowCostWay.way[k] << ", ";
+            }
+            cout<<endl<<endl;
+        }
+        cout<<endl;
+    }
     void printWayList(){
         cout<< "imprimiendo los caminos " << wayList.size() <<endl;
         for(int i=0; i < wayList.size() ; i++){
